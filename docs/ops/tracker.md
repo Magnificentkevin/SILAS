@@ -110,11 +110,21 @@ owns the detailed patent-track evidence.
   `POST /api/v1/telemetry/geofences` had no auth guard at all (anyone
   could post fake location pings or rewrite a facility's geofence) —
   both now require `JwtAuthGuard`.
-  Not yet addressed (lower severity, tracked not fixed): `main.ts`'s
-  CORS allowlist hardcodes a specific Vercel preview URL with a random
-  deployment hash, which will silently stop matching on client-portal's
-  next redeploy; the CSRF token itself is a bare random value rather
-  than HMAC-bound to the session per OWASP's stronger recommendation
+  **Update 2026-09-12: the hardcoded-CORS-URL prediction came true and
+  was fixed the same day** — see the "Repo migrated" entry below for
+  the full story (client-portal redeployed under a new URL as a side
+  effect of the repo move, and the old hardcoded origin was, as
+  predicted, a frozen per-deployment snapshot that no longer matched
+  anything real). `main.ts`'s CORS check is now a dynamic origin
+  function matching the whole `client-portal-*-kevincomeau79-9646.vercel.app`
+  family (stable alias and any hash-suffixed deployment/preview), not
+  one hardcoded string. Verified live: a
+  preflight from the real stable origin, from the new deployment's own
+  hash URL, and from an untrusted origin all get the correct
+  allow/deny response.
+  Not yet addressed (lower severity, tracked not fixed): the CSRF token
+  itself is a bare random value rather than HMAC-bound to the session
+  per OWASP's stronger recommendation
   (defense-in-depth, not urgent absent a shared parent domain).
 - **"Full team" audit, 2026-09-11** — a twelve-role review of the whole
   business (not just engineering: product, ops, marketing, sales,
@@ -425,6 +435,42 @@ owns the detailed patent-track evidence.
   (the httpOnly-cookie/CSRF work) still has to land before that
   migration can actually start. Remaining from the original audit:
   the P2 findings, R12–R20, not yet started.
+
+- **Repo migrated: SILAServ → SILAS, 2026-09-12.** Kevin created a new,
+  empty GitHub repo (`Magnificentkevin/SILAS`) and asked for a fresh
+  start rather than continuing in `SILAServ`. Done as a single clean
+  "Initial commit" (no carried-over history) pushed to `SILAS` as
+  `main`; `SILAServ`'s full history was **not** touched or deleted —
+  it's preserved both on GitHub under its own URL and locally as the
+  branch `main-silaserv-legacy`, in case anything is ever needed from
+  it. Local `origin` now points at `SILAS`; the old remote was renamed
+  to `silaserv-legacy` rather than removed. Used the fresh-start moment
+  to also drop two small tracked hygiene issues instead of carrying
+  them forward: `apps/api/tsconfig.build.tsbuildinfo` (a build
+  artifact, flagged earlier by the DevOps audit) and two empty leftover
+  `boot.*.log` files, both now gitignored.
+  **This surfaced a real, already-blocking deployment bug while
+  checking `client-portal`'s Vercel project**, unrelated to the repo
+  move itself but found because of it: the project's **Root Directory
+  was set to `.`** (the whole monorepo) instead of `apps/client-portal`
+  — every deployment for at least the last several hours had been
+  failing (`routes-manifest.json` not found) or, worse, some had
+  apparently built and served **`marketing-site`'s pages instead of
+  client-portal's**. Also had to reconnect the Vercel project's GitHub
+  integration to the new `SILAS` repo (Vercel's GitHub App needed
+  explicit access granted to the new repo first — a GitHub-side
+  permission grant Kevin did himself). Both fixed: reconnected the git
+  integration, corrected Root Directory to `apps/client-portal` via the
+  Vercel API (no CLI subcommand exposes this setting), then triggered a
+  real redeploy via a push (CLI-triggered deploys don't respect a
+  monorepo's Root Directory setting the same way a GitHub-triggered
+  build does — confirmed the hard way first). New deployment verified
+  `● Ready` with real client-portal routes (`/`, `/login`, `/baa`) all
+  returning 200, not marketing-site's.
+  That redeploy also confirmed, live, the CORS fragility already
+  predicted in this file: the new deployment's URL didn't match the
+  one hardcoded origin in `main.ts`. Fixed properly this time — see the
+  R04/telemetry entry above for the fix and live verification.
 
 ## Planned
 
