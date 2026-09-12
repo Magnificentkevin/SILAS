@@ -1,0 +1,29 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f7faf9;
+  --foreground: #10261f;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  /* All Business Cleaning brand tokens — clean, trustworthy, a little warm.
+     Deliberately distinct from the SILAS internal-tool navy/cyan theme:
+     this is the customer-facing brand, not the ops product. */
+  --color-brand-teal: #0f766e;
+  --color-brand-teal-dark: #0b4f4a;
+  --color-brand-teal-soft: #e6f4f2;
+  --color-brand-amber: #f59e0b;
+  --color-brand-ink: #10261f;
+  --color-brand-ink-soft: #4b6058;
+  --color-brand-border: #d9e6e2;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}

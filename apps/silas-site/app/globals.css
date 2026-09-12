@@ -1,0 +1,39 @@
+@import "tailwindcss";
+
+:root {
+  --background: #0a1130;
+  --foreground: #eef2fa;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  /* Same SILAS brand tokens as apps/web-client — this is the product's own
+     public face, so it should look like the product. */
+  --color-silas-void: #0a1130;
+  --color-silas-navy: #121b3d;
+  --color-silas-navy-soft: #182352;
+  --color-silas-cyan: #2fd9df;
+  --color-silas-cyan-soft: #8fb8e8;
+  --color-silas-border: #29365f;
+  --color-silas-ink: #eef2fa;
+  --color-silas-ink-soft: #a7b3d1;
+}
+
+body {
+  background:
+    radial-gradient(1100px 750px at 12% -10%, rgba(47, 217, 223, 0.10), transparent 60%),
+    radial-gradient(900px 700px at 100% 0%, rgba(47, 217, 223, 0.06), transparent 55%),
+    var(--background);
+  background-attachment: fixed;
+  color: var(--foreground);
+}
+
+@layer components {
+  .silas-card {
+    @apply rounded-2xl border border-silas-border/60 bg-silas-navy/80 p-6 shadow-[0_20px_40px_-28px_rgba(47,217,223,0.35)] backdrop-blur-sm;
+  }
+}

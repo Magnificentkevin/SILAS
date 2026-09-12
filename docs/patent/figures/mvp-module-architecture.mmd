@@ -1,0 +1,36 @@
+%% Derived from the MVP Technical Specification's reference runtime and module
+%% list (not a verbatim source document) — the 10 MVP modules wired into the
+%% golden path and the inverse-recovery failure path.
+flowchart TB
+    WEB["Next.js Web Client"] --> CTX
+    OFF["React Native / Expo + SQLite<br/>(offline client)"] --> CTX
+
+    CTX["02 · Context Adapter"] --> SAN["03 · Sanitization Engine"]
+    SAN --> PRE["04 · Pre-Flight Engine"]
+
+    PRE --> LEASE["05 · Resource Lease Service<br/>(finite assets)"]
+    PRE --> SYNC["06 · Metadata Sync<br/>(CRDT, non-finite)"]
+
+    LEASE --> SAGA["07 · Saga Engine"]
+    SYNC --> SAGA
+
+    SAGA -->|dispatch| ADAPT["External System Adapters<br/>(2+ heterogeneous APIs)"]
+    ADAPT -->|success| SETTLE["08 · Settlement Service<br/>(auth hold + staged ledger)"]
+    ADAPT -->|failure| INV["Inverse Mutations"]
+    INV -->|compensate| SAGA
+
+    SETTLE --> VERIFY["Human Verification"]
+    VERIFY --> COMMIT["Commit"]
+    COMMIT --> AUDIT["09 · Audit Vault<br/>(hash-linked chain)"]
+
+    AUTH["01 · Auth/RBAC"] -.-> WEB
+    AUTH -.-> VERIFY
+
+    CONSOLE["10 · Operator Console"] -.->|observes| SAGA
+    CONSOLE -.->|observes| AUDIT
+
+    DB[("PostgreSQL")]
+    LEASE --- DB
+    SYNC --- DB
+    SETTLE --- DB
+    AUDIT --- DB

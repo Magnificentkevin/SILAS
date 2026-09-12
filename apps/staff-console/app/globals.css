@@ -1,0 +1,52 @@
+@import "tailwindcss";
+
+:root {
+  --background: #0a1130;
+  --foreground: #eef2fa;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  /* Same SILAS brand tokens as web-client, for continuity across surfaces */
+  --color-silas-void: #0a1130;
+  --color-silas-navy: #121b3d;
+  --color-silas-navy-soft: #182352;
+  --color-silas-cyan: #2fd9df;
+  --color-silas-cyan-soft: #8fb8e8;
+  --color-silas-border: #29365f;
+  --color-silas-ink: #eef2fa;
+  --color-silas-ink-soft: #a7b3d1;
+
+  /* Distinct from the brand accent on purpose — marks this surface as the
+     restricted one, the way a hazard stripe reads differently from a logo color. */
+  --color-silas-restricted: #f0a94d;
+}
+
+body {
+  background:
+    radial-gradient(1100px 750px at 12% -10%, rgba(240, 169, 77, 0.06), transparent 60%),
+    radial-gradient(900px 700px at 100% 0%, rgba(47, 217, 223, 0.05), transparent 55%),
+    var(--background);
+  background-attachment: fixed;
+  color: var(--foreground);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer components {
+  .silas-card {
+    @apply rounded-2xl border border-silas-border/60 bg-silas-navy/80 p-5 shadow-[0_20px_40px_-28px_rgba(47,217,223,0.35)] backdrop-blur-sm transition-shadow;
+  }
+  .silas-label {
+    @apply text-xs font-medium text-silas-ink-soft;
+  }
+  .silas-input {
+    @apply rounded-lg border border-silas-border/70 bg-silas-navy-soft px-3 py-2 text-sm text-silas-ink outline-none transition placeholder:text-silas-ink-soft/60 focus:border-silas-cyan/60 focus:ring-2 focus:ring-silas-cyan/20;
+  }
+  .silas-badge-restricted {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-silas-restricted/40 bg-silas-restricted/10 px-2.5 py-1 text-xs font-medium tracking-wide text-silas-restricted uppercase;
+  }
+}

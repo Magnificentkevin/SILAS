@@ -1,0 +1,373 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [postgis, postgis_topology, fuzzystrmatch, postgis_tiger_geocoder]
+}
+
+model Asset {
+  id        String   @id @default(uuid())
+  barcode   String   @unique
+  name      String
+  location  Unsupported("geometry(Point, 4326)")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([location], type: Gist)
+  @@map("assets")
+}
+
+model ScanEvent {
+  id              String                                @id @default(uuid())
+  clientScanId    String                                 @unique
+  barcode         String
+  scannedAt       DateTime
+  location        Unsupported("geometry(Point, 4326)")?
+  voiceNoteUri    String?
+  // Nullable rather than required: existing rows synced before attribution
+  // existed have no scanner of record, and that's a fact worth keeping
+  // visible rather than backfilling with a guess.
+  scannedByUserId String?
+  scannedByUser   User?                                  @relation(fields: [scannedByUserId], references: [id])
+  syncedAt        DateTime                               @default(now())
+
+  @@index([barcode])
+  @@index([scannedByUserId])
+  @@map("scan_events")
+}
+
+enum LedgerAccountType {
+  ASSET
+  LIABILITY
+  EQUITY
+  REVENUE
+  EXPENSE
+}
+
+model LedgerAccount {
+  id        String            @id @default(uuid())
+  code      String            @unique
+  name      String
+  type      LedgerAccountType
+  category  String
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  postings LedgerPosting[]
+
+  @@map("ledger_accounts")
+}
+
+model Sku {
+  id        String   @id @default(uuid())
+  code      String   @unique
+  name      String
+  category  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("skus")
+}
+
+enum RunStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  BREACH_RECOVERY
+}
+
+enum OpportunityStage {
+  PROSPECT
+  QUALIFIED
+  PROPOSAL
+  NEGOTIATION
+  CONTRACT_SIGNED
+}
+
+model Account {
+  id               String   @id @default(uuid())
+  name             String
+  isHealthcareSite Boolean  @default(false)
+  healthScore      Int      @default(100)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  runs           Run[]
+  opportunities  Opportunity[]
+  baaAcceptances BaaAcceptance[]
+  geofence       FacilityGeofence?
+  telemetryPings TelemetryPing[]
+  scheduleLocks  ScheduleLock[]
+  memberships    AccountMembership[]
+  bids           Bid[]
+  integrationConnections IntegrationConnection[]
+
+  @@map("accounts")
+}
+
+model Run {
+  id        String    @id @default(uuid())
+  accountId String
+  account   Account   @relation(fields: [accountId], references: [id])
+  status    RunStatus
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  telemetryPings TelemetryPing[]
+
+  @@index([accountId])
+  @@map("runs")
+}
+
+model Opportunity {
+  id        String           @id @default(uuid())
+  accountId String
+  account   Account          @relation(fields: [accountId], references: [id])
+  stage     OpportunityStage @default(PROSPECT)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  @@index([accountId])
+  @@map("opportunities")
+}
+
+model BaaAcceptance {
+  id           String   @id @default(uuid())
+  accountId    String
+  account      Account  @relation(fields: [accountId], references: [id])
+  termsVersion String
+  digestSha256 String
+  acceptedBy   String
+  acceptedAt   DateTime @default(now())
+
+  @@index([accountId])
+  @@map("baa_acceptances")
+}
+
+model InflationIndexLog {
+  id          String   @id @default(uuid())
+  seriesCode  String
+  multiplier  Decimal  @db.Decimal(10, 4)
+  effectiveAt DateTime
+  createdAt   DateTime @default(now())
+
+  @@index([seriesCode, effectiveAt])
+  @@map("inflation_index_logs")
+}
+
+model FacilityGeofence {
+  id             String   @id @default(uuid())
+  facilityId     String   @unique
+  account        Account  @relation(fields: [facilityId], references: [id])
+  polygonGeoJson Json
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("facility_geofences")
+}
+
+model TelemetryPing {
+  id               String   @id @default(uuid())
+  facilityId       String
+  account          Account  @relation(fields: [facilityId], references: [id])
+  // Which service run this ping is evidence for. Nullable at the DB level
+  // (existing/legacy pings predate this field), but settlement matching only
+  // ever counts pings for the specific run being settled — see
+  // FourWayMatchService — so a null or mismatched-run ping never counts as
+  // evidence for a different run's settlement, however recent it is.
+  runId            String?
+  run              Run?     @relation(fields: [runId], references: [id])
+  lat              Float
+  lng              Float
+  isInsideGeofence Boolean
+  createdAt        DateTime @default(now())
+
+  @@index([facilityId])
+  @@index([runId])
+  @@map("telemetry_pings")
+}
+
+enum ScheduleLockStatus {
+  PENDING
+  LOCKED
+  REJECTED
+}
+
+model ScheduleLock {
+  id                        String             @id @default(uuid())
+  facilityId                String
+  account                   Account            @relation(fields: [facilityId], references: [id])
+  status                    ScheduleLockStatus @default(PENDING)
+  robotSocOk                Boolean
+  materialsAllocatedOk      Boolean
+  quietHourClearanceOk      Boolean
+  subcontractorComplianceOk Boolean
+  escrowPreauthOk           Boolean
+  encryptedAccessPin        String?
+  lockedAt                  DateTime?
+  createdAt                 DateTime           @default(now())
+  updatedAt                 DateTime           @updatedAt
+
+  @@index([facilityId])
+  @@map("schedule_locks")
+}
+
+enum PostingDirection {
+  DEBIT
+  CREDIT
+}
+
+model JournalEntry {
+  id            String   @id @default(uuid())
+  description   String
+  // Caller-supplied idempotency key for settlement postings — a retried or
+  // concurrently-duplicated settlement request with the same key returns the
+  // original entry instead of posting a second one. Nullable so non-settlement
+  // journal entries (if any are ever created) aren't forced to fabricate one.
+  settlementKey String?  @unique
+  createdAt     DateTime @default(now())
+
+  postings LedgerPosting[]
+
+  @@map("journal_entries")
+}
+
+model LedgerPosting {
+  id              String           @id @default(uuid())
+  journalEntryId  String
+  journalEntry    JournalEntry     @relation(fields: [journalEntryId], references: [id])
+  ledgerAccountId String
+  ledgerAccount   LedgerAccount    @relation(fields: [ledgerAccountId], references: [id])
+  direction       PostingDirection
+  amountCents     Int
+  createdAt       DateTime         @default(now())
+
+  @@index([journalEntryId])
+  @@index([ledgerAccountId])
+  @@map("ledger_postings")
+}
+
+enum IntegrationCategory {
+  FACILITY_MANAGEMENT
+  EMPLOYEE_MANAGEMENT
+  PROJECT_MANAGEMENT
+  PLATFORM
+}
+
+enum ConnectionStatus {
+  PENDING
+  CONNECTED
+  ERROR
+  REVOKED
+}
+
+model IntegrationProvider {
+  id        String              @id @default(uuid())
+  name      String              @unique
+  category  IntegrationCategory
+  bestFor   String?
+  createdAt DateTime            @default(now())
+
+  connections IntegrationConnection[]
+
+  @@index([category])
+  @@map("integration_providers")
+}
+
+model IntegrationConnection {
+  id                   String               @id @default(uuid())
+  /// Nullable only for rows that predate this column -- every connection
+  /// created from here on must declare its owning account (enforced by
+  /// CreateConnectionDto), so a credential can never be shared or dispatched
+  /// across a tenant boundary once account-scoped access is built on top of
+  /// this. A null row is a pre-existing, not-yet-backfilled legacy row.
+  accountId            String?
+  account              Account?             @relation(fields: [accountId], references: [id])
+  providerId           String
+  provider             IntegrationProvider  @relation(fields: [providerId], references: [id])
+  label                String
+  status               ConnectionStatus     @default(PENDING)
+  scopes               String[]
+  encryptedCredential  String
+  lastVerifiedAt       DateTime?
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+
+  @@index([providerId])
+  @@index([status])
+  @@index([accountId])
+  @@map("integration_connections")
+}
+
+enum Role {
+  ADMIN
+  OPERATOR
+  VERIFIER
+  VENDOR
+  CUSTOMER
+  HOST_CLIENT
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  /// Internal SILAS staff role (ADMIN/OPERATOR/VERIFIER). Null for external
+  /// parties, whose access is scoped per-account via AccountMembership instead.
+  globalRole   Role?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  memberships AccountMembership[]
+  scanEvents  ScanEvent[]
+  bids        Bid[]
+
+  @@map("users")
+}
+
+enum BidStatus {
+  SUBMITTED
+  ACCEPTED
+  REJECTED
+  WITHDRAWN
+}
+
+model Bid {
+  id          String    @id @default(uuid())
+  accountId   String
+  account     Account   @relation(fields: [accountId], references: [id])
+  // The submitting vendor, taken from the authenticated caller — never from
+  // client-supplied input, so a vendor can't attribute a bid to someone else.
+  vendorId    String
+  vendor      User      @relation(fields: [vendorId], references: [id])
+  amountCents Int
+  description String?
+  status      BidStatus @default(SUBMITTED)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([accountId])
+  @@index([vendorId])
+  @@map("bids")
+}
+
+model AccountMembership {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  accountId String
+  account   Account  @relation(fields: [accountId], references: [id])
+  /// VENDOR, CUSTOMER, or HOST_CLIENT — this user's role for this one account only.
+  role      Role
+  createdAt DateTime @default(now())
+
+  @@unique([userId, accountId])
+  @@index([accountId])
+  @@map("account_memberships")
+}
