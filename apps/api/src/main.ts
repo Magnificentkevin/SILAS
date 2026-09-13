@@ -26,6 +26,7 @@ async function bootstrap() {
   const STATIC_ALLOWED_ORIGINS = new Set([
     'https://silaserv.com',
     'https://staff.silaserv.com',
+    'https://app.silaserv.com',
     'http://localhost:3000',
     'http://localhost:3001',
     'http://localhost:3002',
@@ -34,11 +35,13 @@ async function bootstrap() {
   // allowlist hardcoded one specific deployment's URL
   // (client-portal-mafd9r654-...) -- that's a frozen per-deployment
   // snapshot, not a live pointer, so it silently stopped matching the
-  // moment client-portal redeployed. Vercel gives every project both a
-  // stable alias (client-portal-<account>.vercel.app) and a fresh
-  // hash-suffixed URL per deployment/preview -- match the whole family
-  // instead of one snapshot of it.
-  const CLIENT_PORTAL_VERCEL_ORIGIN = /^https:\/\/client-portal(-[a-z0-9]+)?-kevincomeau79-9646\.vercel\.app$/;
+  // moment client-portal redeployed. A second version required an
+  // account-scoped suffix (-kevincomeau79-9646) that was itself just
+  // another project-specific detail Vercel can change (confirmed: the
+  // live URL as of 2026-09-13, client-portal-taupe-two.vercel.app, has
+  // no such suffix) -- match any client-portal-*.vercel.app instead of
+  // encoding assumptions about one project's current alias shape.
+  const CLIENT_PORTAL_VERCEL_ORIGIN = /^https:\/\/client-portal-[a-z0-9-]+\.vercel\.app$/;
   app.enableCors({
     origin: (origin, callback) => {
       if (!origin || STATIC_ALLOWED_ORIGINS.has(origin) || CLIENT_PORTAL_VERCEL_ORIGIN.test(origin)) {
