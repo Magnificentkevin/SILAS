@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ActivityIndicator, Button, StyleSheet, Text, TextInput, View } from "react-native";
 import { fieldLogin, type FieldUser } from "../lib/auth";
+import { describeError } from "../lib/api";
 
 interface Props {
   onLoggedIn: (user: FieldUser) => void;
@@ -19,7 +20,7 @@ export function LoginScreen({ onLoggedIn }: Props) {
       const user = await fieldLogin(email, password);
       onLoggedIn(user);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Sign-in failed");
+      setError(describeError(err));
     } finally {
       setPending(false);
     }

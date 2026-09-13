@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { apiFetch } from "../lib/api";
+import { apiFetch, describeError } from "../lib/api";
 
 type SurfaceType = "FINISH" | "SCRUB";
 
@@ -36,7 +36,7 @@ export function PostBidEstimator() {
           setResult(res);
           setError(null);
         })
-        .catch((err: Error) => setError(err.message));
+        .catch((err: Error) => setError(describeError(err)));
     }, 250);
 
     return () => clearTimeout(timeout);

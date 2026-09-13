@@ -56,3 +56,29 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
 
   return res.json() as Promise<T>;
 }
+
+/**
+ * Turns an apiFetch failure into something a non-technical user can read.
+ * apiFetch's own error message is deliberately technical (method, path,
+ * status, raw body) — good for a console.error, not for a form's error
+ * text. NestJS's default error shape is { message, error, statusCode };
+ * message is a plain string for most thrown exceptions, or an array of
+ * strings when class-validator rejects a DTO (one message per failed
+ * field) -- the first is shown rather than concatenating all of them.
+ */
+export function describeError(err: unknown): string {
+  const fallback = "Something went wrong — please try again.";
+  if (!(err instanceof Error)) return fallback;
+
+  const match = err.message.match(/^API .+ failed \(\d+\): ([\s\S]*)$/);
+  if (!match) return fallback;
+
+  try {
+    const parsed = JSON.parse(match[1]) as { message?: string | string[] };
+    if (typeof parsed.message === "string" && parsed.message.trim()) return parsed.message;
+    if (Array.isArray(parsed.message) && parsed.message.length > 0) return parsed.message[0];
+  } catch {
+    // Body wasn't JSON (e.g. a proxy error page) — fall through.
+  }
+  return fallback;
+}

@@ -324,11 +324,27 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  memberships AccountMembership[]
-  scanEvents  ScanEvent[]
-  bids        Bid[]
+  memberships         AccountMembership[]
+  scanEvents          ScanEvent[]
+  bids                Bid[]
+  passwordResetTokens PasswordResetToken[]
 
   @@map("users")
+}
+
+model PasswordResetToken {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+  /// SHA-256 hash of the raw token -- the raw value exists only in the
+  /// emailed link and the requester's browser, never stored or logged.
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+  @@map("password_reset_tokens")
 }
 
 enum BidStatus {

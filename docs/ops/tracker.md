@@ -7,21 +7,60 @@ Keep entries to one line. Update as things change; don't let this grow
 into a second status doc — `docs/patent/04-prototype-status.md` already
 owns the detailed patent-track evidence.
 
-## Next up (2026-09-12)
+## Next up (2026-09-13)
 
-- **First thing:** continue the password-reset + plain-language error
-  messages work (approved, not yet started — see the "In progress"
-  entry below for the four `apiFetch` implementations currently
-  surfacing raw backend error strings, and `auth.service.ts`'s lack of
-  any forgot-password/reset-token flow).
-- **New note:** do a real UI/UX pass across every platform (client-portal,
+- **First thing:** the real UI/UX pass across every platform (client-portal,
   staff-console, web-client, field-tablet, plus the three marketing
   sites) for usability and visual polish, not just functional
-  correctness. Everything shipped so far has been judged on "does it
-  work," not "does it look and feel good" — that has to change before
-  this is market-ready. field-tablet is the one surface already judged
-  well-designed (see the UX/UI audit lane); the rest haven't had a real
-  design pass at all.
+  correctness — password reset is done (see below), this is next.
+  field-tablet is the one surface already judged well-designed (see
+  the UX/UI audit lane); the rest haven't had a real design pass at all.
+
+## Password reset + plain-language errors — done (2026-09-13)
+
+Scoped with Kevin first: email reset link for the three web apps
+(client-portal, staff-console, web-client) only; field-tablet keeps
+relying on a staff-triggered reset for now — no email step in its
+login flow, and this was the smallest correct scope for today.
+
+**Backend**: new `PasswordResetToken` table, migration
+`20260913162934_add_password_reset_token` — a brand-new table, so
+unlike the `IntegrationConnection.accountId` migration there's no
+existing-rows/backfill concern at all.
+`POST /auth/forgot-password` (`{email, app}` — `app` is a fixed enum
+the server maps to its own configured base URL, never a client-supplied
+URL — accepting one would let a phishing page get a legitimate reset
+token pointed at itself just by asking) always returns the same
+`{ok:true}` regardless of whether the email matches an account, and
+never throws even if the email provider itself fails — both are
+deliberate anti-enumeration properties, not oversights.
+`POST /auth/reset-password` (`{token, newPassword}`) validates the
+token (unknown/expired/already-used all rejected identically),
+updates the password and marks the token used in one transaction.
+Both endpoints `@SkipCsrf()`, same reasoning as login/register: no
+session exists yet at the point of calling them. New
+`sendPasswordResetEmail` + template added to `@repo/email`, reusing
+the existing Resend integration `marketing-site` already uses.
+8 new `auth.service.spec.ts` tests.
+**Live-verified end to end against real local Postgres** — not just
+mocked: real registration, real `forgot-password` call confirmed to
+create a real `PasswordResetToken` row, a wrong token rejected (400),
+a correct token accepted, the same token rejected on reuse (400), and
+— the part that actually proves it worked — login with the *old*
+password now fails (401) while login with the *new* one succeeds
+(201). `RESEND_API_KEY` isn't configured locally, so the actual email
+send was exercised as far as it honestly could be (confirmed the
+failure is caught, not thrown) — sending a real email needs
+`RESEND_API_KEY` set, which is a decision for whoever owns that
+account, not assumed here.
+
+**Plain-language errors**: added a `describeError()` helper to all
+four apps' `lib/api.ts` (parses NestJS's `{message, error, statusCode}`
+shape out of `apiFetch`'s deliberately technical error string, falls
+back to a generic message otherwise) and wired it into every spot that
+was previously showing a raw error to the user: all four login screens,
+client-portal's BAA/bid/lock pages, web-client's five-point-lock-panel
+and post-bid-estimator, and field-tablet's sync-status line.
 
 ## Waiting on
 

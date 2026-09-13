@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { apiFetch } from "../lib/api";
+import { apiFetch, describeError } from "../lib/api";
 
 interface LockChecks {
   robotSocOk: boolean;
@@ -84,7 +84,7 @@ export function FivePointLockPanel({ accountId }: { accountId: string }) {
       setResult(res);
     } catch (err) {
       if (accountIdRef.current !== requestedAccountId) return;
-      setError(err instanceof Error ? err.message : "Lock attempt failed");
+      setError(describeError(err));
     } finally {
       if (accountIdRef.current === requestedAccountId) {
         setPending(false);

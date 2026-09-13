@@ -1,8 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { clientLogin } from "@/lib/auth";
+import { describeError } from "@/lib/api";
 
 export default function ClientLoginPage() {
   const router = useRouter();
@@ -19,7 +21,7 @@ export default function ClientLoginPage() {
       await clientLogin(email, password);
       router.push("/");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Sign-in failed");
+      setError(describeError(err));
     } finally {
       setPending(false);
     }
@@ -71,6 +73,12 @@ export default function ClientLoginPage() {
             {pending ? "Signing in…" : "Sign in"}
           </button>
         </form>
+
+        <p className="mt-4 text-center text-xs">
+          <Link href="/forgot-password" className="text-silas-cyan hover:brightness-110">
+            Forgot your password?
+          </Link>
+        </p>
 
         <p className="mt-6 text-center text-xs text-silas-ink-soft">
           Staff member? Sign in at{" "}

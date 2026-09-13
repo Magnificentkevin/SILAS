@@ -2,7 +2,7 @@
 
 import { useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
-import { apiFetch } from "@/lib/api";
+import { apiFetch, describeError } from "@/lib/api";
 
 interface LockResult {
   [key: string]: unknown;
@@ -39,7 +39,7 @@ function LockForm() {
       });
       setResult(res);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Lock attempt failed");
+      setError(describeError(err));
     } finally {
       setPending(false);
     }

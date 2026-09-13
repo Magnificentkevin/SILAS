@@ -1,4 +1,4 @@
-import { API_URL, apiFetch, getToken } from "./api";
+import { API_URL, apiFetch, describeError, getToken } from "./api";
 import {
   getPendingScans,
   getPendingVoiceNotes,
@@ -121,7 +121,7 @@ export async function syncPendingScans(capturedByUserId: string): Promise<SyncSt
       await syncVoiceNotes(capturedByUserId);
     return { state: "success", syncedCount, voiceNotesUploaded, voiceNotesFailed, at: new Date() };
   } catch (err) {
-    return { state: "error", message: err instanceof Error ? err.message : String(err), at: new Date() };
+    return { state: "error", message: describeError(err), at: new Date() };
   } finally {
     inFlight = false;
   }

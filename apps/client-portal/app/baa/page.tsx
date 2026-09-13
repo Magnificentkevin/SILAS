@@ -2,7 +2,7 @@
 
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
-import { apiFetch } from "@/lib/api";
+import { apiFetch, describeError } from "@/lib/api";
 import { getStoredUser } from "@/lib/auth";
 
 interface BaaTerms {
@@ -24,7 +24,7 @@ function BaaForm() {
   useEffect(() => {
     apiFetch<BaaTerms>("/compliance/baa/terms")
       .then(setTerms)
-      .catch((err) => setTermsError(err instanceof Error ? err.message : "Failed to load terms"));
+      .catch((err) => setTermsError(describeError(err)));
   }, []);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -38,7 +38,7 @@ function BaaForm() {
       });
       setAccepted(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Submission failed");
+      setError(describeError(err));
     } finally {
       setPending(false);
     }

@@ -7,6 +7,7 @@ import {
   QuoteRequestConfirmationEmail,
   type QuoteRequestConfirmationEmailProps,
 } from "./templates/QuoteRequestConfirmationEmail.js";
+import { PasswordResetEmail, type PasswordResetEmailProps } from "./templates/PasswordResetEmail.js";
 
 export interface QuoteRequestEmailInput {
   from: string;
@@ -47,4 +48,27 @@ export async function sendQuoteRequestEmails({
   }
 
   return { adminResult, confirmationResult };
+}
+
+export interface PasswordResetEmailInput {
+  from: string;
+  to: string;
+  props: PasswordResetEmailProps;
+}
+
+export async function sendPasswordResetEmail({ from, to, props }: PasswordResetEmailInput) {
+  const resend = getResendClient();
+
+  const result = await resend.emails.send({
+    from,
+    to,
+    subject: "Reset your SILAS password",
+    react: PasswordResetEmail(props),
+  });
+
+  if (result.error) {
+    throw new Error(`Failed to send password reset email: ${result.error.message}`);
+  }
+
+  return result;
 }

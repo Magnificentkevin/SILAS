@@ -3,7 +3,7 @@ import type { FastifyReply } from 'fastify';
 import { AUTH_COOKIE_MAX_AGE_SECONDS, AUTH_COOKIE_NAME } from './auth-cookie.js';
 import { AuthService } from './auth.service.js';
 import { CurrentUser } from './current-user.decorator.js';
-import { LoginDto, RegisterDto } from './dto.js';
+import { ForgotPasswordDto, LoginDto, RegisterDto, ResetPasswordDto } from './dto.js';
 import { JwtAuthGuard } from './jwt-auth.guard.js';
 import type { JwtPayload } from './jwt-payload.js';
 import { SkipCsrf } from './skip-csrf.decorator.js';
@@ -29,6 +29,21 @@ export class AuthController {
     const result = await this.authService.login(dto);
     this.setAuthCookie(reply, result.accessToken);
     return result;
+  }
+
+  // Exempt from CsrfGuard, same reasoning as login/register: nobody has a
+  // session (or a CSRF token bound to one) at the point they're asking for
+  // a reset link or submitting a new password with one.
+  @SkipCsrf()
+  @Post('forgot-password')
+  forgotPassword(@Body() dto: ForgotPasswordDto) {
+    return this.authService.forgotPassword(dto);
+  }
+
+  @SkipCsrf()
+  @Post('reset-password')
+  resetPassword(@Body() dto: ResetPasswordDto) {
+    return this.authService.resetPassword(dto.token, dto.newPassword);
   }
 
   @Post('logout')
