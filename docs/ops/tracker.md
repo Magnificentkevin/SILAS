@@ -9,12 +9,26 @@ owns the detailed patent-track evidence.
 
 ## Next up (2026-09-13)
 
-- **First thing:** the real UI/UX pass across every platform (client-portal,
-  staff-console, web-client, field-tablet, plus the three marketing
-  sites) for usability and visual polish, not just functional
-  correctness — password reset is done (see below), this is next.
-  field-tablet is the one surface already judged well-designed (see
-  the UX/UI audit lane); the rest haven't had a real design pass at all.
+- **In progress:** SILAS rebrand rollout (robot mascot badge, gradient
+  wordmark, "Consider it handled." tagline, official palette) across
+  `silas-site`, `staff-console`/`client-portal`/`web-client`, and
+  `field-tablet`. Plan reviewed with `ux-ui-designer`/`cmo` first — see
+  the dedicated entry below once it lands. This *is* the UI/UX pass
+  named below, now that real brand assets exist to do it with.
+- field-tablet is the one surface already judged well-designed (see
+  the UX/UI audit lane) independent of the rebrand.
+- **Parked:** publish `field-tablet` to the App Store / Play Store, then
+  add real download links (Android/iOS/desktop) to the main marketing
+  page. Not started — `app.json` has no `bundleIdentifier`/`package`
+  set yet, and there's no Apple Developer or Google Play Console
+  account connected. Needs Kevin to create/fund those accounts (account
+  creation and payment aren't things Claude can do on his behalf)
+  before EAS build + submission can happen. No "desktop" product
+  exists in this repo at all — client-portal/staff-console/web-client
+  are browser apps; a desktop download would mean either an Electron/
+  Tauri wrapper (new work) or just calling the installable-PWA route
+  "desktop," which is a much smaller ask than native app store
+  publishing — worth deciding which when this is picked back up.
 
 ## Password reset + plain-language errors — done (2026-09-13)
 
@@ -104,6 +118,35 @@ decisions rather than oversights:
   Verified live: `/` and `/login` both return 200 at
   `https://client-portal-mafd9r654-kevincomeau79-9646.vercel.app`. No
   custom domain attached yet.
+  **Update 2026-09-13:** that URL is already gone — Vercel reassigned
+  client-portal's production alias to `client-portal-taupe-two.vercel.app`
+  with no action on our end, and the CORS allowlist (which had been
+  hardened to match the account-scoped alias family after the last time
+  this happened) still didn't match the new shape, so **client-portal
+  login was silently broken in production** until caught today while
+  wiring CORS for the two new app deployments below. Fixed by broadening
+  the match to any `client-portal-*.vercel.app` rather than encoding any
+  particular alias shape a second time (`apps/api/src/main.ts`). Verified
+  live: an OPTIONS preflight from the real current origin now returns
+  204 with the correct `access-control-allow-origin`. Lesson banked: this
+  class of bug (Vercel alias drift silently breaking CORS) has now
+  recurred twice — worth a periodic live check rather than assuming a
+  fix holds forever.
+- ~~`staff-console`/`web-client` have no hosting~~ **Live as of
+  2026-09-13:** deployed to Vercel the same way as client-portal (Root
+  Directory must be set to `apps/staff-console`/`apps/web-client` via the
+  Vercel API — no CLI flag for it, same gotcha as the client-portal
+  incident — then redeployed via a GitHub push, since CLI-triggered
+  deploys don't respect a monorepo's Root Directory the same way).
+  `NEXT_PUBLIC_API_URL` set on both; `STAFF_CONSOLE_URL`/`WEB_CLIENT_URL`
+  set on the Cloud Run API so password-reset emails point at real URLs.
+  Custom subdomains `staff.silaserv.com` / `app.silaserv.com` registered
+  on the Vercel side and added to the CORS allowlist, but **DNS isn't
+  live yet** — `silaserv.com` is hosted externally at HostGator, not on
+  Vercel, so Kevin needs to add two CNAME records himself (Claude has no
+  HostGator access): `staff.silaserv.com` → `cname.vercel-dns.com` and
+  `app.silaserv.com` → `cname.vercel-dns.com`. Both apps are fully live
+  and verified today at their Vercel-assigned URLs in the meantime.
 - ~~Backend (`apps/api` + Postgres) has no production hosting~~ **Live as
   of 2026-09-10:** deployed to Cloud Run (`silas-api`, project
   `silas-507213`, region `us-central1`) + Cloud SQL for PostgreSQL
