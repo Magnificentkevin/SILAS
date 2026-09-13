@@ -62,6 +62,30 @@ was previously showing a raw error to the user: all four login screens,
 client-portal's BAA/bid/lock pages, web-client's five-point-lock-panel
 and post-bid-estimator, and field-tablet's sync-status line.
 
+**Deployed 2026-09-13**: migration applied to production Cloud SQL via
+the usual Auth Proxy tunnel; new image built (`gcloud builds submit`)
+and rolled out to Cloud Run (revision `silas-api-00010-mv9`). Verified
+live: `/health` returns `{"status":"ok","database":"connected"}` and a
+real `POST /auth/forgot-password` against the new revision returns
+`{"ok":true}`. `CLIENT_PORTAL_URL` set on the Cloud Run service to the
+real live URL (`https://client-portal-taupe-two.vercel.app` — note
+this changed from the URL recorded in the "Launch blockers" section
+below, confirming the CORS-fix entry's point about deployment URLs not
+being stable). Two things deliberately **not** done, both real open
+decisions rather than oversights:
+- `RESEND_API_KEY` / `PASSWORD_RESET_EMAIL_FROM` are still unset in
+  production — same as local, `forgotPassword` catches the send
+  failure rather than throwing, so the API behaves correctly but no
+  email actually goes out yet. Needs a real Resend key from whoever
+  owns that account before reset emails can send for real; setting one
+  means the feature starts emailing real people, so it wasn't done
+  without asking first.
+- `STAFF_CONSOLE_URL` / `WEB_CLIENT_URL` were **not** set to anything,
+  because — checked via `vercel projects ls` — `staff-console` and
+  `web-client` were never actually deployed; only `client-portal` is
+  live. Password reset for those two apps is scoped and coded but has
+  nowhere real to send a link until they're deployed.
+
 ## Waiting on
 
 - Reply from Washington Patent Services — outreach letter sent (see
