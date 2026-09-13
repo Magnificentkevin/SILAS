@@ -1,15 +1,27 @@
+import Image from "next/image";
 import { silasConfig } from "@/lib/site-config";
 
 export default function HomePage() {
   return (
     <>
       <section className="mx-auto max-w-5xl px-6 py-24 sm:py-32 text-center">
-        <p className="silas-eyebrow text-xs font-medium tracking-wide text-silas-ink-soft/80 uppercase">
+        <Image
+          src="/badge-hero.png"
+          alt=""
+          width={100}
+          height={100}
+          className="mx-auto"
+          priority
+        />
+        <p className="silas-eyebrow mt-6 text-xs font-medium tracking-wide text-silas-ink-soft/80 uppercase">
           Enterprise orchestration
         </p>
         <h1 className="mt-4 text-4xl sm:text-5xl font-bold text-silas-ink">
           {silasConfig.tagline}
         </h1>
+        <p className="mt-3 text-base sm:text-lg font-medium text-silas-royal">
+          {silasConfig.capabilityLine}
+        </p>
         <p className="mt-6 text-lg text-silas-ink-soft max-w-2xl mx-auto">
           {silasConfig.heroSubhead}
         </p>
@@ -19,6 +31,27 @@ export default function HomePage() {
         >
           Staff Login
         </a>
+      </section>
+
+      <section className="mx-auto max-w-5xl px-6 pb-16">
+        <div className="grid gap-5 sm:grid-cols-2">
+          <Image
+            src="/office-1.jpg"
+            alt=""
+            width={900}
+            height={1200}
+            className="rounded-2xl object-cover shadow-sm"
+            style={{ aspectRatio: "3 / 4", maxHeight: "320px", width: "100%" }}
+          />
+          <Image
+            src="/office-2.jpg"
+            alt=""
+            width={900}
+            height={1200}
+            className="rounded-2xl object-cover shadow-sm"
+            style={{ aspectRatio: "3 / 4", maxHeight: "320px", width: "100%" }}
+          />
+        </div>
       </section>
 
       <section className="mx-auto max-w-5xl px-6 pb-24">

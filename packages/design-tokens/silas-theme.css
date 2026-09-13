@@ -1,0 +1,18 @@
+/* Shared SILAS brand tokens, imported by web-client/staff-console/
+   client-portal/silas-site globals.css instead of each app hand-copying
+   its own "Same SILAS brand tokens... for continuity" block. Token names
+   are kept stable across the 2026-09-13 rebrand (only the hex values
+   changed, to the official kit palette) since ~25 components reference
+   these as Tailwind utility classes (bg-silas-cyan, text-silas-void,
+   etc.) and renaming would be pure churn with no functional benefit. */
+@theme inline {
+  --color-silas-void: #082766; /* was #0a1130 -- now official Deep Blue */
+  --color-silas-navy: #121b3d;
+  --color-silas-navy-soft: #182352;
+  --color-silas-cyan: #00c6b7; /* was #2fd9df -- now official Vibrant Teal */
+  --color-silas-cyan-soft: #78d2d5; /* was #8fb8e8 -- now official Aqua */
+  --color-silas-royal: #103eaf; /* new -- official Royal Blue, primary CTA/link accent */
+  --color-silas-border: #29365f;
+  --color-silas-ink: #eef2fa;
+  --color-silas-ink-soft: #a7b3d1;
+}

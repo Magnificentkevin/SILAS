@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getStoredUser, signOut, type StaffUser } from "@/lib/auth";
@@ -31,7 +32,8 @@ export default function StaffHome() {
       <header className="mb-8 flex items-center justify-between">
         <div>
           <span className="silas-badge-restricted">Staff only</span>
-          <h1 className="mt-3 text-2xl font-semibold tracking-tight text-silas-ink">
+          <h1 className="mt-3 flex items-center gap-2 text-2xl font-semibold tracking-tight text-silas-ink">
+            <Image src="/badge-mark.png" alt="" width={32} height={32} className="rounded-full" />
             SILAS Staff Console
           </h1>
           <p className="mt-1 text-sm text-silas-ink-soft">

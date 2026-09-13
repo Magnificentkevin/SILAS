@@ -41,8 +41,8 @@ export function PasswordResetEmail({ name, resetUrl, expiresInMinutes }: Passwor
             <Button
               href={resetUrl}
               style={{
-                backgroundColor: "#2fd9df",
-                color: "#0a1130",
+                backgroundColor: "#00c6b7",
+                color: "#082766",
                 padding: "12px 20px",
                 borderRadius: "6px",
                 fontWeight: 600,

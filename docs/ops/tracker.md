@@ -9,14 +9,8 @@ owns the detailed patent-track evidence.
 
 ## Next up (2026-09-13)
 
-- **In progress:** SILAS rebrand rollout (robot mascot badge, gradient
-  wordmark, "Consider it handled." tagline, official palette) across
-  `silas-site`, `staff-console`/`client-portal`/`web-client`, and
-  `field-tablet`. Plan reviewed with `ux-ui-designer`/`cmo` first — see
-  the dedicated entry below once it lands. This *is* the UI/UX pass
-  named below, now that real brand assets exist to do it with.
 - field-tablet is the one surface already judged well-designed (see
-  the UX/UI audit lane) independent of the rebrand.
+  the UX/UI audit lane) independent of the rebrand below.
 - **Parked:** publish `field-tablet` to the App Store / Play Store, then
   add real download links (Android/iOS/desktop) to the main marketing
   page. Not started — `app.json` has no `bundleIdentifier`/`package`
@@ -29,6 +23,87 @@ owns the detailed patent-track evidence.
   Tauri wrapper (new work) or just calling the installable-PWA route
   "desktop," which is a much smaller ask than native app store
   publishing — worth deciding which when this is picked back up.
+
+## SILAS rebrand rollout — done (2026-09-13)
+
+New official brand kit arrived (robot mascot badge, gradient "silas"
+wordmark, tagline "Consider it handled.", palette Royal Blue #103EAF /
+Deep Blue #082766 / Vibrant Teal #00C6B7 / Aqua #78D2D5 / White) — timed
+to double as the UI/UX pass already next up. Reviewed with
+`ux-ui-designer`/`cmo` before touching code; both converged on the same
+shape of concern, so the rollout isn't a literal "flip everything to
+the light mascot brand": `silas-site` (marketing) goes fully light,
+`client-portal`/`staff-console`/`web-client` stay dark and get retinted
+onto the official palette instead (Deep Blue/Vibrant Teal replacing the
+old ad-hoc navy/cyan) — those are where staff/clients need "this
+handles serious infrastructure" trust, not a consumer-app feel.
+Tagline layered, not swapped: "Consider it handled." is the headline,
+the existing technical descriptor demotes to a subhead for evaluators.
+
+**Shared tokens**: new `packages/design-tokens/silas-theme.css` closes
+a real gap Explore turned up — the four apps were each hand-copying an
+identical "Same SILAS brand tokens... for continuity" CSS block with no
+single source of truth. Deviated from the original plan on one point,
+for a concrete reason found mid-implementation: kept the existing token
+*names* (`--color-silas-cyan`, `--color-silas-void`, etc.) rather than
+renaming them, since ~25 components already reference them as Tailwind
+classes (`bg-silas-cyan`, `text-silas-void`) — renaming would've been
+pure churn across 25 files for zero functional gain. Only the hex
+*values* changed to the official palette.
+
+**Assets**: derived from the kit's master PNGs via `sharp` (favicons,
+app icons, field-tablet's icon/splash/adaptive-icon set). One thing
+the plan called for that didn't survive contact with reality: a
+"flattened, sparkles-stripped" badge variant for persistent in-app
+chrome. Tried it two ways (saturation/brightness reduction, then adding
+blur) — neither actually removed the star accents without either doing
+nothing meaningful or degrading the whole image. No vector layers exist
+to isolate them cleanly, and automated pixel-hunting risked touching
+the face's own specular highlights. Decided not to ship a mediocre
+half-edited brand asset — the "dial it back for daily use" goal is
+instead achieved through size and placement (a small 28-32px corner
+mark next to functional headings, vs. the full badge at hero size on
+`silas-site`), which turns out to do most of the real work anyway.
+Same honesty call on the Android monochrome adaptive-icon layer: a
+luminance-threshold silhouette of a photorealistic face produced
+meaningless noise, not an icon shape, so it's a plain filled circle
+(the badge's own silhouette) instead — correct and clean, but
+explicitly a placeholder for a real designer-authored mark, not
+disguised as one.
+
+**Also fixed in passing**: `silas-site`'s "Staff Login"/"Client Login"
+links defaulted to `portal.silaserv.com`/`clients.silaserv.com` —
+subdomains that were never actually deployed. Now point at the real
+live URLs (`staff.silaserv.com`, and client-portal's Vercel-assigned
+URL until it gets a custom domain).
+
+**Homepage photography**: added two Unsplash photos (free/commercial-
+use license) to `silas-site` after Kevin asked for "high rez office
+pics" — picked through several rounds with his live feedback: rejected
+one set for visible third-party branding/logos in the source photo,
+rejected a CGI-rendered "office" that would've looked fake next to real
+photography, rejected a warm-toned lobby whose orange accent wall
+clashed with the palette, and rejected a dramatic exterior skyscraper
+shot per his call. Landed on two interior shots that both happen to
+show skyline through the windows: a blue-toned lobby (couch, plants,
+reflective floor) and a teal-partitioned office row — both logo-free,
+person-free, and color-coordinated with the brand without looking
+staged for it.
+
+**Verification**: `npx turbo run test` (7/7, 78/78 tests) and
+`tsc --noEmit` clean across all four affected Next.js apps. Visually
+checked live via the dev server preview for `silas-site` (hero badge,
+header lockup, capability-line layering, both photos) and all three
+dark apps (retinted card background, teal accents, badge mark next to
+headings) — including catching that a couple of "it's not showing up"
+moments during that check were just Next.js/browser image caching on
+`/public` files, not real bugs, confirmed by reading the files
+directly. Favicons confirmed serving (`/icon.png` → 200 on all four).
+Not yet done: real-device check of field-tablet's regenerated icon set
+(no device-verification loop active this session) — the file-level
+sanity check passed, but a physical Android/iOS confirmation, same
+pattern as the earlier field-tablet verification, is still worth doing
+before this ships to app-store submission eventually.
 
 ## Password reset + plain-language errors — done (2026-09-13)
 

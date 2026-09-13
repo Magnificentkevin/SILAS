@@ -6,11 +6,17 @@ export interface SilasFeature {
 export const silasConfig = {
   name: "SILAS",
   domain: "silaserv.com",
-  tagline: "A distributed orchestration platform for stateful enterprise operations.",
+  tagline: "Consider it handled.",
+  capabilityLine: "A distributed orchestration platform for stateful enterprise operations.",
   heroSubhead:
     "Isolated client-side context, deterministic Saga-based recovery, finite-resource leasing, and a cryptographically verifiable audit chain — coordinating stateful operations across heterogeneous systems.",
-  portalUrl: process.env.NEXT_PUBLIC_PORTAL_URL || "https://portal.silaserv.com",
-  clientPortalUrl: process.env.NEXT_PUBLIC_CLIENT_PORTAL_URL || "https://clients.silaserv.com",
+  // These previously defaulted to portal.silaserv.com / clients.silaserv.com,
+  // subdomains that were never actually deployed -- pointing at the real
+  // live URLs instead (client-portal has no custom domain yet, so its
+  // Vercel-assigned one is the correct current target).
+  portalUrl: process.env.NEXT_PUBLIC_PORTAL_URL || "https://staff.silaserv.com",
+  clientPortalUrl:
+    process.env.NEXT_PUBLIC_CLIENT_PORTAL_URL || "https://client-portal-taupe-two.vercel.app",
   features: [
     {
       title: "Lease-based resource arbitration",

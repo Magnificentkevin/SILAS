@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { CrmPipelineFeed } from "@/components/crm-pipeline-feed";
@@ -50,7 +51,8 @@ export default function Home() {
     <div className="min-h-screen p-8 text-silas-ink">
       <header className="mb-8 flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-silas-cyan">
+          <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight text-silas-cyan">
+            <Image src="/badge-mark.png" alt="" width={32} height={32} className="rounded-full" />
             SILAS Command Portal
           </h1>
           <p className="mt-1 text-sm text-silas-ink-soft">

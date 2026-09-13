@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -51,7 +52,8 @@ export default function ClientHome() {
       <header className="mb-8 flex items-center justify-between">
         <div>
           <span className="silas-badge-partner">Client portal</span>
-          <h1 className="mt-3 text-2xl font-semibold tracking-tight text-silas-ink">
+          <h1 className="mt-3 flex items-center gap-2 text-2xl font-semibold tracking-tight text-silas-ink">
+            <Image src="/badge-mark.png" alt="" width={32} height={32} className="rounded-full" />
             SILAS Client Portal
           </h1>
           <p className="mt-1 text-sm text-silas-ink-soft">Signed in as {user?.email}</p>

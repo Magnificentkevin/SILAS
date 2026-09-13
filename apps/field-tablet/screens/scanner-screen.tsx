@@ -158,7 +158,7 @@ const styles = StyleSheet.create({
   },
   syncStatus: {
     padding: 4,
-    color: "#9cf",
+    color: "#00c6b7",
     textAlign: "center",
     fontSize: 12,
   },

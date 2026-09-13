@@ -54,7 +54,7 @@ export function LoginScreen({ onLoggedIn }: Props) {
       {error ? <Text style={styles.error}>{error}</Text> : null}
 
       {pending ? (
-        <ActivityIndicator color="#9cf" style={styles.spinner} />
+        <ActivityIndicator color="#00c6b7" style={styles.spinner} />
       ) : (
         <Button title="Sign in" onPress={() => void handleSubmit()} disabled={!email || !password} />
       )}
@@ -76,7 +76,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   subtitle: {
-    color: "#9cf",
+    color: "#00c6b7",
     fontSize: 14,
     textAlign: "center",
     marginTop: 8,

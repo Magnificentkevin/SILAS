@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -30,7 +31,8 @@ export default function ClientLoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center p-6 text-silas-ink">
       <div className="silas-card w-full max-w-sm">
-        <h1 className="text-xl font-semibold tracking-tight text-silas-cyan">
+        <h1 className="flex items-center gap-2 text-xl font-semibold tracking-tight text-silas-cyan">
+          <Image src="/badge-mark.png" alt="" width={28} height={28} className="rounded-full" />
           SILAS Command Portal
         </h1>
         <p className="mt-1 text-sm text-silas-ink-soft">

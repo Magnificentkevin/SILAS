@@ -120,12 +120,12 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   signedInAs: {
-    color: "#9cf",
+    color: "#00c6b7",
     fontSize: 12,
     marginTop: 2,
   },
   syncStatus: {
-    color: "#9cf",
+    color: "#00c6b7",
     fontSize: 12,
     marginBottom: 8,
   },

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -31,7 +32,8 @@ export default function StaffLoginPage() {
     <div className="flex min-h-screen items-center justify-center p-6 text-silas-ink">
       <div className="silas-card w-full max-w-sm">
         <span className="silas-badge-restricted">Staff only</span>
-        <h1 className="mt-3 text-xl font-semibold tracking-tight text-silas-ink">
+        <h1 className="mt-3 flex items-center gap-2 text-xl font-semibold tracking-tight text-silas-ink">
+          <Image src="/badge-mark.png" alt="" width={28} height={28} className="rounded-full" />
           SILAS Staff Console
         </h1>
         <p className="mt-1 text-sm text-silas-ink-soft">

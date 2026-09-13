@@ -1,12 +1,17 @@
+import Image from "next/image";
 import { silasConfig } from "@/lib/site-config";
 
 export function Header() {
   return (
     <header className="border-b border-silas-border/60">
       <div className="mx-auto max-w-5xl flex items-center justify-between px-6 py-5">
-        <span className="text-lg font-semibold tracking-tight text-silas-cyan">
-          {silasConfig.name}
-        </span>
+        <Image
+          src="/logo-horizontal.png"
+          alt={silasConfig.name}
+          width={160}
+          height={40}
+          priority
+        />
         <div className="flex items-center gap-3">
           <a
             href={silasConfig.clientPortalUrl}
