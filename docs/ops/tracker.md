@@ -99,6 +99,39 @@ headings) — including catching that a couple of "it's not showing up"
 moments during that check were just Next.js/browser image caching on
 `/public` files, not real bugs, confirmed by reading the files
 directly. Favicons confirmed serving (`/icon.png` → 200 on all four).
+
+**Deployed 2026-09-13, and one more Vercel reconnection bug caught**:
+pushed to `main` (commit `c73312e`), which auto-deployed client-portal/
+staff-console/web-client correctly — but `silaserv.com` kept serving
+yesterday's build. Root cause, same class of bug as the earlier
+client-portal incident: the `silaserv` Vercel project was still
+git-linked to the old `SILAServ` repo, never repointed to `SILAS`
+during the repo migration. Fixed via the Vercel API (unlink, relink to
+`Magnificentkevin/SILAS`), then triggered a fresh production deploy
+from `main` directly (`POST /v13/deployments` with a `gitSource`) since
+the relink alone doesn't retroactively deploy the commits it missed.
+Verified live: `silaserv.com`'s title, "Consider it handled." copy,
+and the corrected login URLs all confirmed via direct fetch; all four
+Vercel projects confirmed on commit `c73312e`; all four new brand
+images (`logo-horizontal.png`, `badge-hero.png`, `office-1.jpg`,
+`office-2.jpg`) return 200 from the live domain. Worth a standing
+reminder: **check that every Vercel project is actually linked to the
+`SILAS` repo**, not just the ones that happened to get exercised —
+this is the second one found by accident, not by audit.
+
+**Checked every other Vercel project too, found two more stale links**:
+`algorhyme` (algorhymeofficial.com) and `allbusinesscleaning`
+(allbusinesscleaning.com) — both still on `SILAServ`. These are
+unrelated businesses, not part of the rebrand, so checked with Kevin
+before touching production deploys for someone else's sites — he said
+fix them. Same relink-and-redeploy fix; both verified `READY` on commit
+`c73312e` and their custom domains still return 200 afterward. All five
+Vercel projects in this account now confirmed on the current `SILAS`
+repo — worth treating "is this project linked to the right repo" as a
+standing thing to spot-check after any future repo-level change, since
+this is the second and third time it's been found by accident rather
+than by looking for it.
+
 Not yet done: real-device check of field-tablet's regenerated icon set
 (no device-verification loop active this session) — the file-level
 sanity check passed, but a physical Android/iOS confirmation, same
